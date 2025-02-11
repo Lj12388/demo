@@ -1,0 +1,54 @@
+name: Java with Maven and Node.js CI
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0.3
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: storesystem
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+      redis:
+        image: redis:4.0
+        ports:
+          - 6379:6379
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up JDK 1.8
+      uses: actions/setup-java@v1
+      with:
+        java-version: 1.8
+
+    - name: Set up Maven
+      uses: stCarolas/setup-maven@v4
+      with:
+        maven-version: 3.8.3
+
+    - name: Build with Maven
+      run: mvn clean install
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14' # Node.js 14 is the recommended version for Vue.js 3.x
+
+    - name: Install npm dependencies
+      run: npm install
+
+    - name: Build Vue.js
+      run: npm run build
+
+    - name: Test Vue.js
+      run: npm test
+
+    # You can add additional steps for running your application or further testing here.
